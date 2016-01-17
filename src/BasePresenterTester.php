@@ -2,14 +2,14 @@
 
 namespace Helbrary\NetteTesterExtension;
 
-use Nette\Configurator;
+use Nette\Application\Responses\TextResponse;
 use Nette\Object;
 use Nette\Security\AuthenticationException;
 use Nette\Security\IAuthenticator;
 use Nette\Security\Identity;
 use Nette\Security\IIdentity;
+use Nette\Utils\FileSystem;
 use Tester\Assert;
-use Tracy\Debugger;
 
 
 abstract class BasePresenterTester extends \Tester\TestCase
@@ -39,7 +39,12 @@ abstract class BasePresenterTester extends \Tester\TestCase
 		$this->linkGenerator = $this->container->getByType('Nette\Application\LinkGenerator');
 		$this->presenterFactory = $this->container->getByType('Nette\Application\IPresenterFactory');
 		$this->authenticator = new Authenticator();
-		$configurator = new Configurator();
+	}
+
+	public function setUp()
+	{
+		parent::setUp();
+		FileSystem::delete(APP_DIR  . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'latte');
 	}
 
 	/**
@@ -71,8 +76,14 @@ abstract class BasePresenterTester extends \Tester\TestCase
 			$presenter->user->login($userId, '');
 		}
 		$request = new \Nette\Application\Request($presenterName, $method, $parameters);
-		/** @var $response \Nette\Application\Responses\RedirectResponse */
-		return $presenter->run($request);
+		$response = $presenter->run($request);
+
+		if ($response instanceof TextResponse) {
+			if ($response->getSource() instanceof \Nette\Application\UI\ITemplate) {
+				$output = $response->getSource()->render();
+			}
+		}
+		return $response;
 	}
 
 	/**

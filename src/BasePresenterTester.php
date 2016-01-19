@@ -16,6 +16,11 @@ abstract class BasePresenterTester extends \Tester\TestCase
 {
 
 	/**
+	 * @var string
+	 */
+	protected $presenterName;
+
+	/**
 	 * @var \Nette\DI\Container
 	 */
 	protected $container;
@@ -33,8 +38,13 @@ abstract class BasePresenterTester extends \Tester\TestCase
 	/** @var  Authenticator */
 	protected $authenticator;
 
-	public function __construct()
+	/**
+	 * BasePresenterTester constructor.
+	 * @param string $presenterName  - etc. 'Front:GoodsChange:Goods'
+	 */
+	public function __construct($presenterName)
 	{
+		$this->presenterName = $presenterName;
 		$this->container = require __DIR__ . '/../../../../app/bootstrap.php';
 		$this->linkGenerator = $this->container->getByType('Nette\Application\LinkGenerator');
 		$this->presenterFactory = $this->container->getByType('Nette\Application\IPresenterFactory');
@@ -56,20 +66,19 @@ abstract class BasePresenterTester extends \Tester\TestCase
 
 	/**
 	 * Create and send request
-	 * @param string $presenterName - etc. 'Front:GoodsChange:Goods'
 	 * @param array $parameters
 	 * @param string $method
 	 * @param null|int $userId
 	 * @return \Nette\Application\IResponse
 	 */
-	public function sendRequest($presenterName, $parameters = array(), $method = 'GET', $userId = NULL)
+	public function sendRequest($parameters = array(), $method = 'GET', $userId = NULL)
 	{
-		$presenter = $this->getPresenter($presenterName);
+		$presenter = $this->getPresenter($this->presenterName);
 		if ($userId !== NULL) {
 			$presenter->user->setAuthenticator($this->authenticator);
 			$presenter->user->login($userId, '');
 		}
-		$request = new \Nette\Application\Request($presenterName, $method, $parameters);
+		$request = new \Nette\Application\Request($this->presenterName, $method, $parameters);
 		$response = $presenter->run($request);
 
 		if ($response instanceof TextResponse) {
@@ -82,31 +91,29 @@ abstract class BasePresenterTester extends \Tester\TestCase
 
 	/**
 	 * Check if request is without error
-	 * @param string $presenterName - etc. 'Front:GoodsChange:Goods'
 	 * @param array $parameters
 	 * @param string $method
 	 * @param null|int $userId
 	 */
-	public function checkRequestNoError($presenterName, $parameters = array(), $method = 'GET', $userId = NULL)
+	public function checkRequestNoError($parameters = array(), $method = 'GET', $userId = NULL)
 	{
-		Assert::noError(function() use ($presenterName, $method, $parameters, $userId) {
-			$this->sendRequest($presenterName, $parameters, $method, $userId);
+		Assert::noError(function() use ($method, $parameters, $userId) {
+			$this->sendRequest($parameters, $method, $userId);
 		});
 	}
 
 	/**
 	 * Check if request is without error
-	 * @param string $presenterName - etc. 'Front:GoodsChange:Goods'
 	 * @param string $method
 	 * @param array $parameters
 	 * @param string $expectedType
 	 * @param null|int $userId
 	 * @throws \Exception
 	 */
-	public function checkRequestError($presenterName, $parameters = array(), $expectedType, $method = 'GET', $userId = NULL)
+	public function checkRequestError($parameters = array(), $expectedType, $method = 'GET', $userId = NULL)
 	{
-		Assert::Error(function() use ($presenterName, $parameters, $method, $userId) {
-			$this->sendRequest($presenterName, $parameters, $method, $userId);
+		Assert::Error(function() use ($parameters, $method, $userId) {
+			$this->sendRequest($parameters, $method, $userId);
 		}, $expectedType);
 	}
 }

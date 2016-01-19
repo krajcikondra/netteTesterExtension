@@ -127,6 +127,7 @@ abstract class BasePresenterTester extends \Tester\TestCase
 	}
 
 	/**
+	 * Check if request return redirect to action
 	 * @param array $parameters
 	 * @param $redirectToAction - etc. 'Front:Sign:in'
 	 * @param string $method

@@ -2,13 +2,14 @@
 
 namespace Helbrary\NetteTesterExtension;
 
+use Nette\Application\Responses\RedirectResponse;
 use Nette\Application\Responses\TextResponse;
 use Nette\Object;
 use Nette\Security\AuthenticationException;
 use Nette\Security\IAuthenticator;
 use Nette\Security\Identity;
 use Nette\Security\IIdentity;
-use Nette\Utils\FileSystem;
+use Nette\Utils\Strings;
 use Tester\Assert;
 
 
@@ -98,7 +99,10 @@ abstract class BasePresenterTester extends \Tester\TestCase
 	public function checkRequestNoError($parameters = array(), $method = 'GET', $userId = NULL)
 	{
 		Assert::noError(function() use ($method, $parameters, $userId) {
-			$this->sendRequest($parameters, $method, $userId);
+			$response = $this->sendRequest($parameters, $method, $userId);
+			if ($response instanceof RedirectResponse) {
+				throw new UnexpectedRedirectResponse();
+			}
 		});
 	}
 
@@ -113,9 +117,35 @@ abstract class BasePresenterTester extends \Tester\TestCase
 	public function checkRequestError($parameters = array(), $expectedType, $method = 'GET', $userId = NULL)
 	{
 		Assert::Error(function() use ($parameters, $method, $userId) {
-			$this->sendRequest($parameters, $method, $userId);
+			$response = $this->sendRequest($parameters, $method, $userId);
+			if ($response instanceof RedirectResponse) {
+				throw new UnexpectedRedirectResponse();
+			}
 		}, $expectedType);
 	}
+
+	/**
+	 * @param array $parameters
+	 * @param $redirectToAction - etc. 'Front:Sign:in'
+	 * @param string $method
+	 * @param int $userId
+	 * @param bool $ignoreRedirectUrlParameters
+	 * @throws \Nette\Application\UI\InvalidLinkException
+	 */
+	public function checkRedirectTo($parameters = array(), $redirectToAction, $method = 'GET', $userId = NULL, $ignoreRedirectUrlParameters = TRUE)
+	{
+		$response = $this->sendRequest($parameters, $method, $userId);
+		Assert::true($response instanceof \Nette\Application\Responses\RedirectResponse);
+		if ($ignoreRedirectUrlParameters) {
+			$responseUrl = $response->getUrl();
+			$endPos = strrpos($responseUrl, '?');
+			$responseUrlWithoutParameters = Strings::substring($responseUrl, 0, $endPos === FALSE ? NULL : $endPos);
+			Assert::same($this->linkGenerator->link($redirectToAction), $responseUrlWithoutParameters);
+		} else {
+			Assert::same($this->linkGenerator->link($redirectToAction), $response->getUrl());
+		}
+	}
+
 }
 
 class Authenticator extends Object implements IAuthenticator
@@ -132,5 +162,16 @@ class Authenticator extends Object implements IAuthenticator
 	{
 		list( $id, $password ) = $credentials;
 		return new Identity( $id, 'admin', NULL );
+	}
+}
+
+class Exception extends \Exception
+{}
+
+class UnexpectedRedirectResponse extends Exception
+{
+	function __construct($message = 'For check redirect response use method checkRedirectToSignIn')
+	{
+		parent::__construct($message);
 	}
 }

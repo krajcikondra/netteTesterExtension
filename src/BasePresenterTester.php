@@ -78,6 +78,8 @@ abstract class BasePresenterTester extends \Tester\TestCase
 		if ($userId !== NULL) {
 			$presenter->user->setAuthenticator($this->authenticator);
 			$presenter->user->login($userId, '');
+		} else {
+			$presenter->user->logOut();
 		}
 		$request = new \Nette\Application\Request($this->presenterName, $method, $parameters);
 		$response = $presenter->run($request);

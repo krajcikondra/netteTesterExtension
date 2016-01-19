@@ -41,12 +41,6 @@ abstract class BasePresenterTester extends \Tester\TestCase
 		$this->authenticator = new Authenticator();
 	}
 
-	public function setUp()
-	{
-		parent::setUp();
-		FileSystem::delete(APP_DIR  . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR . 'latte');
-	}
-
 	/**
 	 * Return presenter
 	 * @param string $presenter - etc. 'Front:GoodsChange:Goods'
@@ -63,12 +57,12 @@ abstract class BasePresenterTester extends \Tester\TestCase
 	/**
 	 * Create and send request
 	 * @param string $presenterName - etc. 'Front:GoodsChange:Goods'
-	 * @param string $method
 	 * @param array $parameters
+	 * @param string $method
 	 * @param null|int $userId
 	 * @return \Nette\Application\IResponse
 	 */
-	public function sendRequest($presenterName, $method = 'GET', $parameters = array(), $userId = NULL)
+	public function sendRequest($presenterName, $parameters = array(), $method = 'GET', $userId = NULL)
 	{
 		$presenter = $this->getPresenter($presenterName);
 		if ($userId !== NULL) {
@@ -89,14 +83,14 @@ abstract class BasePresenterTester extends \Tester\TestCase
 	/**
 	 * Check if request is without error
 	 * @param string $presenterName - etc. 'Front:GoodsChange:Goods'
-	 * @param string $method
 	 * @param array $parameters
+	 * @param string $method
 	 * @param null|int $userId
 	 */
-	public function checkRequestNoError($presenterName, $method = 'GET', $parameters = array(), $userId = NULL)
+	public function checkRequestNoError($presenterName, $parameters = array(), $method = 'GET', $userId = NULL)
 	{
 		Assert::noError(function() use ($presenterName, $method, $parameters, $userId) {
-			$this->sendRequest($presenterName, $method, $parameters, $userId);
+			$this->sendRequest($presenterName, $parameters, $method, $userId);
 		});
 	}
 
@@ -109,10 +103,10 @@ abstract class BasePresenterTester extends \Tester\TestCase
 	 * @param null|int $userId
 	 * @throws \Exception
 	 */
-	public function checkRequestError($presenterName, $method = 'GET', $parameters = array(), $expectedType, $userId = NULL)
+	public function checkRequestError($presenterName, $parameters = array(), $expectedType, $method = 'GET', $userId = NULL)
 	{
-		Assert::Error(function() use ($presenterName, $method, $parameters, $userId) {
-			$this->sendRequest($presenterName, $method, $parameters, $userId);
+		Assert::Error(function() use ($presenterName, $parameters, $method, $userId) {
+			$this->sendRequest($presenterName, $parameters, $method, $userId);
 		}, $expectedType);
 	}
 }

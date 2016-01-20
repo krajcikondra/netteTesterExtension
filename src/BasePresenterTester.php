@@ -16,6 +16,8 @@ use Tester\Assert;
 abstract class BasePresenterTester extends \Tester\TestCase
 {
 
+	const DEFAULT_USER_ROLE = 'admin';
+
 	/**
 	 * @var string
 	 */
@@ -70,14 +72,15 @@ abstract class BasePresenterTester extends \Tester\TestCase
 	 * @param array $parameters
 	 * @param string $method
 	 * @param null|int $userId
+	 * @param string $userRole
 	 * @return \Nette\Application\IResponse
 	 */
-	public function sendRequest($parameters = array(), $method = 'GET', $userId = NULL)
+	public function sendRequest($parameters = array(), $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE)
 	{
 		$presenter = $this->getPresenter($this->presenterName);
 		if ($userId !== NULL) {
 			$presenter->user->setAuthenticator($this->authenticator);
-			$presenter->user->login($userId, '');
+			$presenter->user->login($userId, $userRole);
 		} else {
 			$presenter->user->logOut();
 		}
@@ -97,11 +100,13 @@ abstract class BasePresenterTester extends \Tester\TestCase
 	 * @param array $parameters
 	 * @param string $method
 	 * @param null|int $userId
+	 * @param string $userRole
+	 * @throws UnexpectedRedirectResponse
 	 */
-	public function checkRequestNoError($parameters = array(), $method = 'GET', $userId = NULL)
+	public function checkRequestNoError($parameters = array(), $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE)
 	{
-		Assert::noError(function() use ($method, $parameters, $userId) {
-			$response = $this->sendRequest($parameters, $method, $userId);
+		Assert::noError(function() use ($method, $parameters, $userId, $userRole) {
+			$response = $this->sendRequest($parameters, $method, $userId, $userRole);
 			if ($response instanceof RedirectResponse) {
 				throw new UnexpectedRedirectResponse();
 			}
@@ -110,16 +115,17 @@ abstract class BasePresenterTester extends \Tester\TestCase
 
 	/**
 	 * Check if request is without error
-	 * @param string $method
 	 * @param array $parameters
 	 * @param string $expectedType
+	 * @param string $method
 	 * @param null|int $userId
-	 * @throws \Exception
+	 * @param string $userRole
+	 * @throws UnexpectedRedirectResponse
 	 */
-	public function checkRequestError($parameters = array(), $expectedType, $method = 'GET', $userId = NULL)
+	public function checkRequestError($parameters = array(), $expectedType, $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE)
 	{
-		Assert::Error(function() use ($parameters, $method, $userId) {
-			$response = $this->sendRequest($parameters, $method, $userId);
+		Assert::Error(function() use ($parameters, $method, $userId, $userRole) {
+			$response = $this->sendRequest($parameters, $method, $userId, $userRole);
 			if ($response instanceof RedirectResponse) {
 				throw new UnexpectedRedirectResponse();
 			}
@@ -127,17 +133,17 @@ abstract class BasePresenterTester extends \Tester\TestCase
 	}
 
 	/**
-	 * Check if request return redirect to action
 	 * @param array $parameters
 	 * @param $redirectToAction - etc. 'Front:Sign:in'
 	 * @param string $method
 	 * @param int $userId
+	 * @param string $userRole
 	 * @param bool $ignoreRedirectUrlParameters
 	 * @throws \Nette\Application\UI\InvalidLinkException
 	 */
-	public function checkRedirectTo($parameters = array(), $redirectToAction, $method = 'GET', $userId = NULL, $ignoreRedirectUrlParameters = TRUE)
+	public function checkRedirectTo($parameters = array(), $redirectToAction, $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE, $ignoreRedirectUrlParameters = TRUE)
 	{
-		$response = $this->sendRequest($parameters, $method, $userId);
+		$response = $this->sendRequest($parameters, $method, $userId, $userRole);
 		Assert::true($response instanceof \Nette\Application\Responses\RedirectResponse);
 		if ($ignoreRedirectUrlParameters) {
 			$responseUrl = $response->getUrl();
@@ -149,32 +155,4 @@ abstract class BasePresenterTester extends \Tester\TestCase
 		}
 	}
 
-}
-
-class Authenticator extends Object implements IAuthenticator
-{
-
-	/**
-	 * Performs an authentication against e.g. database.
-	 * and returns IIdentity on success or throws AuthenticationException
-	 * @param array $credentials
-	 * @return IIdentity
-	 * @throws AuthenticationException
-	 */
-	function authenticate(array $credentials)
-	{
-		list( $id, $password ) = $credentials;
-		return new Identity( $id, 'admin', NULL );
-	}
-}
-
-class Exception extends \Exception
-{}
-
-class UnexpectedRedirectResponse extends Exception
-{
-	function __construct($message = 'For check redirect response use method checkRedirectToSignIn')
-	{
-		parent::__construct($message);
-	}
 }

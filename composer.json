@@ -12,7 +12,9 @@
 	  "Helbrary\\NetteTesterExtension\\": "src/"
 	},
 	"classmap": [
-	  "src/BasePresenterTester.php"
+	  "src/BasePresenterTester.php",
+	  "src/exceptions.php",
+	  "src/Authenticator.php"
 	]
   }
 }

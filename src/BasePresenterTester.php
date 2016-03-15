@@ -4,16 +4,10 @@ namespace Helbrary\NetteTesterExtension;
 
 use Nette\Application\Responses\RedirectResponse;
 use Nette\Application\Responses\TextResponse;
-use Nette\Object;
-use Nette\Security\AuthenticationException;
-use Nette\Security\IAuthenticator;
-use Nette\Security\Identity;
-use Nette\Security\IIdentity;
 use Nette\Utils\Strings;
-use Tester\Assert;
 
 
-abstract class BasePresenterTester extends \Tester\TestCase
+abstract class BasePresenterTester extends Tester
 {
 
 	const DEFAULT_USER_ROLE = 'admin';
@@ -105,7 +99,7 @@ abstract class BasePresenterTester extends \Tester\TestCase
 	 */
 	public function checkRequestNoError($parameters = array(), $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE)
 	{
-		Assert::noError(function() use ($method, $parameters, $userId, $userRole) {
+		$this->noError(function() use ($method, $parameters, $userId, $userRole) {
 			$response = $this->sendRequest($parameters, $method, $userId, $userRole);
 			if ($response instanceof RedirectResponse) {
 				throw new UnexpectedRedirectResponse();
@@ -124,7 +118,7 @@ abstract class BasePresenterTester extends \Tester\TestCase
 	 */
 	public function checkRequestError($parameters = array(), $expectedType, $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE)
 	{
-		Assert::Error(function() use ($parameters, $method, $userId, $userRole) {
+		$this->error(function() use ($parameters, $method, $userId, $userRole) {
 			$response = $this->sendRequest($parameters, $method, $userId, $userRole);
 			if ($response instanceof RedirectResponse) {
 				throw new UnexpectedRedirectResponse();
@@ -144,14 +138,14 @@ abstract class BasePresenterTester extends \Tester\TestCase
 	public function checkRedirectTo($parameters = array(), $redirectToAction, $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE, $ignoreRedirectUrlParameters = TRUE)
 	{
 		$response = $this->sendRequest($parameters, $method, $userId, $userRole);
-		Assert::true($response instanceof \Nette\Application\Responses\RedirectResponse);
+		$this->assertTrue($response instanceof \Nette\Application\Responses\RedirectResponse);
 		if ($ignoreRedirectUrlParameters) {
 			$responseUrl = $response->getUrl();
 			$endPos = strrpos($responseUrl, '?');
 			$responseUrlWithoutParameters = Strings::substring($responseUrl, 0, $endPos === FALSE ? NULL : $endPos);
-			Assert::same($this->linkGenerator->link($redirectToAction), $responseUrlWithoutParameters);
+			$this->assertSame($this->linkGenerator->link($redirectToAction), $responseUrlWithoutParameters);
 		} else {
-			Assert::same($this->linkGenerator->link($redirectToAction), $response->getUrl());
+			$this->assertSame($this->linkGenerator->link($redirectToAction), $response->getUrl());
 		}
 	}
 

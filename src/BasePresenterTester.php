@@ -37,12 +37,13 @@ abstract class BasePresenterTester extends Tester
 
 	/**
 	 * BasePresenterTester constructor.
-	 * @param string $presenterName  - etc. 'Front:GoodsChange:Goods'
+	 * @param string $presenterName - etc. 'Front:GoodsChange:Goods'
+	 * @param string $bootstrapPath
 	 */
-	public function __construct($presenterName)
+	public function __construct($presenterName, $bootstrapPath = __DIR__ . '/../../../../app/bootstrap.php')
 	{
 		$this->presenterName = $presenterName;
-		$this->container = require __DIR__ . '/../../../../app/bootstrap.php';
+		$this->container = require $bootstrapPath;
 		$this->linkGenerator = $this->container->getByType('Nette\Application\LinkGenerator');
 		$this->presenterFactory = $this->container->getByType('Nette\Application\IPresenterFactory');
 		$this->authenticator = new Authenticator();

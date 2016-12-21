@@ -4,6 +4,7 @@ namespace Helbrary\NetteTesterExtension;
 
 use Nette\Application\Responses\RedirectResponse;
 use Nette\Application\Responses\TextResponse;
+use Nette\Security\IAuthenticator;
 use Nette\Utils\Strings;
 
 
@@ -12,28 +13,23 @@ abstract class BasePresenterTester extends Tester
 
 	const DEFAULT_USER_ROLE = 'admin';
 
-	/**
-	 * @var string
-	 */
+	/** @var string */
 	protected $presenterName;
 
-	/**
-	 * @var \Nette\DI\Container
-	 */
+	/** @var \Nette\DI\Container */
 	protected $container;
 
-	/**
-	 * @var \Nette\Application\LinkGenerator
-	 */
+	/** @var \Nette\Application\LinkGenerator */
 	protected $linkGenerator;
 
-	/**
-	 * @var \Nette\Application\IPresenterFactory
-	 */
+	/** @var \Nette\Application\IPresenterFactory */
 	protected $presenterFactory;
 
-	/** @var  Authenticator */
+	/** @var  IAuthenticator */
 	protected $authenticator;
+
+	/** @var string */
+	protected $userStorageNamespace;
 
 	/**
 	 * BasePresenterTester constructor.
@@ -46,7 +42,7 @@ abstract class BasePresenterTester extends Tester
 		$this->container = require $bootstrapPath;
 		$this->linkGenerator = $this->container->getByType('Nette\Application\LinkGenerator');
 		$this->presenterFactory = $this->container->getByType('Nette\Application\IPresenterFactory');
-		$this->authenticator = new Authenticator();
+		$this->authenticator = $this->container->getByType(IAuthenticator::class);
 	}
 
 	/**
@@ -63,19 +59,33 @@ abstract class BasePresenterTester extends Tester
 	}
 
 	/**
+	 * @param string $namespace
+	 */
+	public function setUserStorageNamespace($namespace)
+	{
+		$this->userStorageNamespace = $namespace;
+	}
+
+	/**
 	 * Create and send request
-	 * @param array $parameters
-	 * @param string $method
-	 * @param null|int $userId
-	 * @param string $userRole
+	 * @param array       $parameters
+	 * @param string      $method
+	 * @param null|int    $userId
+	 * @param string      $userRole
+	 * @param null|array  $identityData
 	 * @return \Nette\Application\IResponse
 	 */
-	public function sendRequest($parameters = array(), $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE)
+	public function sendRequest($parameters = array(), $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE, $identityData = NULL)
 	{
 		$presenter = $this->getPresenter($this->presenterName);
 		if ($userId !== NULL) {
 			$presenter->user->setAuthenticator($this->authenticator);
+			$this->authenticator->setIdentityData($identityData);
+			if ($this->userStorageNamespace) {
+				$presenter->user->getStorage()->setNamespace($this->userStorageNamespace);
+			}
 			$presenter->user->login($userId, $userRole);
+
 		} else {
 			$presenter->user->logOut();
 		}
@@ -98,12 +108,12 @@ abstract class BasePresenterTester extends Tester
 	 * @param string $userRole
 	 * @throws UnexpectedRedirectResponse
 	 */
-	public function checkRequestNoError($parameters = array(), $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE)
+	public function checkRequestNoError($parameters = array(), $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE, $identityData = NULL)
 	{
-		$this->noError(function() use ($method, $parameters, $userId, $userRole) {
-			$response = $this->sendRequest($parameters, $method, $userId, $userRole);
+		$this->noError(function() use ($method, $parameters, $userId, $userRole, $identityData) {
+			$response = $this->sendRequest($parameters, $method, $userId, $userRole, $identityData);
 			if ($response instanceof RedirectResponse) {
-				throw new UnexpectedRedirectResponse();
+				throw new UnexpectedRedirectResponse($response->getUrl());
 			}
 		});
 	}
@@ -128,17 +138,17 @@ abstract class BasePresenterTester extends Tester
 	}
 
 	/**
-	 * @param array $parameters
-	 * @param $redirectToAction - etc. 'Front:Sign:in'
+	 * @param array  $parameters
+	 * @param        $redirectToAction - etc. 'Front:Sign:in'
 	 * @param string $method
-	 * @param int $userId
+	 * @param int    $userId
 	 * @param string $userRole
-	 * @param bool $ignoreRedirectUrlParameters
-	 * @throws \Nette\Application\UI\InvalidLinkException
+	 * @param bool   $ignoreRedirectUrlParameters
+	 * @param array|null   $identityData
 	 */
-	public function checkRedirectTo($parameters = array(), $redirectToAction, $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE, $ignoreRedirectUrlParameters = TRUE)
+	public function checkRedirectTo($parameters = array(), $redirectToAction, $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE, $ignoreRedirectUrlParameters = TRUE, $identityData = NULL)
 	{
-		$response = $this->sendRequest($parameters, $method, $userId, $userRole);
+		$response = $this->sendRequest($parameters, $method, $userId, $userRole, $identityData);
 		$this->assertTrue($response instanceof \Nette\Application\Responses\RedirectResponse);
 		if ($ignoreRedirectUrlParameters) {
 			$responseUrl = $response->getUrl();

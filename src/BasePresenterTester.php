@@ -127,10 +127,10 @@ abstract class BasePresenterTester extends Tester
 	 * @param string $userRole
 	 * @throws UnexpectedRedirectResponse
 	 */
-	public function checkRequestError($parameters = array(), $expectedType, $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE)
+	public function checkRequestError($parameters = array(), $expectedType, $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE, $identityData = NULL)
 	{
-		$this->error(function() use ($parameters, $method, $userId, $userRole) {
-			$response = $this->sendRequest($parameters, $method, $userId, $userRole);
+		$this->error(function() use ($parameters, $method, $userId, $userRole, $identityData) {
+			$response = $this->sendRequest($parameters, $method, $userId, $userRole, $identityData);
 			if ($response instanceof RedirectResponse) {
 				throw new UnexpectedRedirectResponse();
 			}

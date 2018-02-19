@@ -2,14 +2,16 @@
 
 namespace Helbrary\NetteTesterExtension;
 
-use Nette\Object;
 use Nette\Security\AuthenticationException;
 use Nette\Security\IAuthenticator;
 use Nette\Security\Identity;
 use Nette\Security\IIdentity;
+use Nette\SmartObject;
 
-class Authenticator extends Object implements IAuthenticator
+class Authenticator implements IAuthenticator
 {
+
+	use SmartObject;
 
 	/**
 	 * Performs an authentication against e.g. database.

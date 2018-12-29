@@ -71,3 +71,51 @@ final class TestAccountPresenter extends \Helbrary\NetteTesterExtension\BasePres
 $testCase = new TestAccountPresenter();
 $testCase->run();
 ```
+
+Multiple presenter tester in one test
+
+```php
+<?php
+
+require __DIR__ . '/../../vendor/autoload.php';
+require __DIR__ . '/../../vendor/helbrary/nette-tester-extension/src/BasePresenterTester.php';
+
+final class TestPresenterActions extends \Helbrary\NetteTesterExtension\BaseMultiPresenterTester
+{
+
+    /**
+     * TestGoodsPresenter constructor.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
+    public function testActions()
+    {
+        $actions = [
+            'Core:Customers' => [
+                'actions' => [
+                    'default' => [
+                        'parameters' => [], // optional - default is empty array
+                        'method' => 'GET', // optional - default is GET
+                        'userId' => NULL, // optional - default is NULL
+                        'userRole' => NULL, // optional - default is NULL
+                        'identityData' => NULL, // optional - default is NULL
+                    ],
+                    'detail' => [
+                        'parameters' => ['id' => 1],
+                    ],
+
+                ]
+            ]
+        ];
+
+        $this->checkWihtoutErorrs($actions);
+    }
+}
+
+$testCase = new TestPresenterActions();
+$testCase->run();
+```
+

@@ -4,7 +4,7 @@
   "type": "library",
   "license": ["BSD-3-Clause", "GPL-2.0", "GPL-3.0"],
   "require": {
-	"php": ">= 5.3.7",
+	"php": ">= 7.0.0",
 	"nette/nette": ">= 2.3.0",
 	"nette/utils": ">= 2.4.0",
 	"nette/tester": ">=1.5.6"
@@ -14,7 +14,9 @@
 	  "Helbrary\\NetteTesterExtension\\": "src/"
 	},
 	"classmap": [
+	  "src/BaseMultiPresenterTester.php",
 	  "src/BasePresenterTester.php",
+	  "src/PresenterTester.php",
 	  "src/exceptions.php",
 	  "src/Authenticator.php"
 	]

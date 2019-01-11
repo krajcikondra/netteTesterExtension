@@ -4,6 +4,7 @@ namespace Helbrary\NetteTesterExtension;
 
 
 use Nette\Application\IPresenter;
+use Nette\Security\IAuthenticator;
 
 abstract class PresenterTester extends Tester
 {

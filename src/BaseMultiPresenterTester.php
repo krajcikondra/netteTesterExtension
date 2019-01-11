@@ -31,5 +31,27 @@ class BaseMultiPresenterTester extends PresenterTester
     }
 
 
+    /**
+     * @param array $actions
+     * @param string $redirectTo
+     * @param bool $ignoreRedirectParameters
+     */
+    public function checkRedirectsTo(array $actions, string $redirectTo, bool $ignoreRedirectParameters = TRUE) {
+        foreach ($actions as $presenterName => $actionsData) {
+            foreach ($actionsData['actions'] as $actionDataVariant) {
+                $this->setPresenterName($presenterName);
+                $this->checkRedirectTo(
+                    $actionDataVariant['parameters'],
+                    $redirectTo,
+                    isset($actionDataVariant['method']) ? $actionDataVariant['method'] : 'GET',
+                    isset($actionDataVariant['userId']) ? $actionDataVariant['userId'] : NULL,
+                    isset($actionDataVariant['userRole']) ? $actionDataVariant['userRole'] : NULL,
+                    $ignoreRedirectParameters,
+                    isset($actionDataVariant['identityData']) ? $actionDataVariant['identityData'] : NULL
+                );
+            }
+        }
+    }
+
 
 }

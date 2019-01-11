@@ -96,15 +96,15 @@ final class TestPresenterActions extends \Helbrary\NetteTesterExtension\BaseMult
         $actions = [
             'Core:Customers' => [
                 'actions' => [
-                    'default' => [
-                        'parameters' => [], // optional - default is empty array
+                    [
+                        'parameters' => ['action' => 'default'], // optional - default is empty array
                         'method' => 'GET', // optional - default is GET
                         'userId' => NULL, // optional - default is NULL
                         'userRole' => NULL, // optional - default is NULL
                         'identityData' => NULL, // optional - default is NULL
                     ],
-                    'detail' => [
-                        'parameters' => ['id' => 1],
+                    [
+                        'parameters' => ['id' => 1, 'action' => 'default'],
                     ],
 
                 ]

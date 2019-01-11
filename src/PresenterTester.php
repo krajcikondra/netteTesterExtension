@@ -51,10 +51,17 @@ abstract class PresenterTester extends Tester
      */
     public function sendRequest($parameters = array(), $method = 'GET', $userId = NULL, $userRole = self::DEFAULT_USER_ROLE, $identityData = NULL)
     {
+        if ($identityData !== NULL) {
+            if ($this->authenticator instanceof Authenticator) {
+                $this->authenticator->setIdentityData($identityData);
+            } else {
+                throw new Exception('Cannot set identityData for active authenticator. Use \Helbrary\NetteTesterExtension\Authenticator instead');
+            }
+        }
+
         $presenter = $this->getPresenter($this->presenterName);
         if ($userId !== NULL) {
             $presenter->user->setAuthenticator($this->authenticator);
-            $this->authenticator->setIdentityData($identityData);
             if ($this->userStorageNamespace) {
                 $presenter->user->getStorage()->setNamespace($this->userStorageNamespace);
             }

@@ -17,17 +17,14 @@ class BaseMultiPresenterTester extends PresenterTester
      */
     public function checkWihtoutErorrs(array $actions) {
         foreach ($actions as $presenterName => $actionsData) {
-            foreach ($actionsData['actions'] as $action => $actionData) {
-                $parameters = isset($actionsData['parameters']) ? $actionsData['parameters'] : [];
-                $parameters['action'] = $action;
-
+            foreach ($actionsData['actions'] as $actionDataVariant) {
                 $this->setPresenterName($presenterName);
                 $this->checkRequestNoError(
-                    $parameters,
-                    isset($actionData['method']) ? $actionData['method'] : 'GET',
-                    isset($actionData['userId']) ? $actionData['userId'] : NULL,
-                    isset($actionData['userRole']) ? $actionData['userRole'] : NULL,
-                    isset($actionData['identityData']) ? $actionData['identityData'] : NULL
+                    $actionDataVariant['parameters'],
+                    isset($actionDataVariant['method']) ? $actionDataVariant['method'] : 'GET',
+                    isset($actionDataVariant['userId']) ? $actionDataVariant['userId'] : NULL,
+                    isset($actionDataVariant['userRole']) ? $actionDataVariant['userRole'] : NULL,
+                    isset($actionDataVariant['identityData']) ? $actionDataVariant['identityData'] : NULL
                 );
             }
         }

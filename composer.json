@@ -9,6 +9,9 @@
 	"nette/utils": ">= 2.4.0",
 	"nette/tester": ">=1.5.6"
   },
+  "require-dev": {
+	"phpstan/phpstan": "^1.4"
+  },
   "autoload": {
 	"psr-4": {
 	  "Helbrary\\NetteTesterExtension\\": "src/"

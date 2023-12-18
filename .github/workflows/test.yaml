@@ -1,0 +1,25 @@
+name: PHPStan
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+
+jobs:
+  phpstan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+
+      - name: Install dependencies
+        run: composer install --no-progress --no-suggest --prefer-dist
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyze --level=5 src

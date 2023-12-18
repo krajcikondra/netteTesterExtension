@@ -34,7 +34,7 @@ class Authenticator implements IAuthenticator
      * @param array|NULL $data
      * @return self
      */
-	public function setIdentityData(array $data = NULL) {
+	public function setIdentityData(array $data = NULL): self {
 	    $this->identityData = $data;
 	    return $this;
     }
